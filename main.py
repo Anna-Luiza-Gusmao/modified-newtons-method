@@ -12,13 +12,6 @@ def user_function(vetor_da_variaveis):
     return new_function
 
 
-def backtracking_armijo(xk, dk, function, g, alpha, c=0.5, beta=0.2):
-    while function(xk + alpha * dk) > function(xk) + c * alpha * np.dot(g, dk):
-        alpha *= beta
-    print("Alpha: ", alpha)
-    return alpha
-
-
 def newton_modificado(v0, epsilon, user_function):
     global funcao
     x, y = symbols('x y')
@@ -28,7 +21,6 @@ def newton_modificado(v0, epsilon, user_function):
     num_iters = []
     x_vals = []
     y_vals = []
-    alpha = 1.0
 
     # Calcula o gradiente da função
     def gradient(x_val, y_val):
@@ -71,11 +63,14 @@ def newton_modificado(v0, epsilon, user_function):
         # Calcule a inversa da Hessiana
         hessiana_inversa = np.linalg.inv(calculate_hessian(xk[0], xk[1]))
 
-        dk = np.dot(hessiana_inversa, g)
+        dk = -np.dot(hessiana_inversa, g)
 
-        alpha = backtracking_armijo(xk, dk, user_function, g, alpha)
+        alpha = 1
+        while user_function(xk + alpha * dk) > user_function(xk) + 0.1 * alpha * np.dot(g, dk):
+            alpha *= 0.5
+        ft_alpha = alpha * dk
 
-        x_new = xk + alpha * dk
+        x_new = xk + ft_alpha
         xk = x_new
 
         # Critério de Parada das Variáveis
