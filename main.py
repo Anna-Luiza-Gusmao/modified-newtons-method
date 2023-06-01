@@ -55,12 +55,7 @@ def newton_modificado(v0, epsilon, user_function):
 
         g = gradient(xk[0], xk[1])
 
-        # Critério de Parada do Gradiente
-        if np.linalg.norm(g) < epsilon:
-            print("Critério de parada do gradiente atingido")
-            break
-
-        # Calcule a inversa da Hessiana
+        # Cálculo da inversa da Hessiana
         hessiana_inversa = np.linalg.inv(calculate_hessian(xk[0], xk[1]))
 
         dk = -np.dot(hessiana_inversa, g)
