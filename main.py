@@ -3,16 +3,15 @@ import matplotlib.pyplot as plt
 from sympy import symbols, sympify, diff, lambdify
 
 
-def user_function(vetor_da_variaveis):
+def calculate_function(vetor_da_variaveis):
     global funcao
     # Cria uma expressão simbólica da função a partir da string fornecida pelo usuário
     new_function = sympify(funcao)
     new_function = new_function.subs(x, vetor_da_variaveis[0]).subs(y, vetor_da_variaveis[1])
-    print("Funçao", new_function)
     return new_function
 
 
-def newton_modificado(v0, epsilon, user_function):
+def newton_modificado(v0, user_function):
     global funcao
     x, y = symbols('x y')
     xk = v0
@@ -91,11 +90,9 @@ x0 = float(input("Insira o x inicial: "))
 y0 = float(input("Insira o y inicial: "))
 
 # A variável inicial recebe os valores do usuário
-v0 = np.array([x0, y0])
-
-epsilon = 1e-6
+variavel_inicial = np.array([x0, y0])
 
 # Chama o método de Newton Modificado
-x_opt, f_opt, num_iter = newton_modificado(v0, epsilon, user_function)
+x_opt, f_opt, num_iter = newton_modificado(variavel_inicial, calculate_function)
 
 print(f"Solução ótima encontrada: x = {x_opt}, f(x) = {f_opt}, número de interações = {num_iter}")
