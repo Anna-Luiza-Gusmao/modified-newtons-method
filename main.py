@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from sympy import symbols, sympify, diff, lambdify
-
+import math
+import graphic as graphics_solution
 
 def calculate_function(vetor_da_variaveis):
     global funcao
@@ -18,8 +18,10 @@ def newton_modificado(v0, user_function):
 
     max_iter = 1000
     num_iters = []
+    function_values = []
     x_vals = []
     y_vals = []
+    modulo_do_vetor = []
 
     # Calcula o gradiente da função
     def gradient(x_val, y_val):
@@ -48,8 +50,10 @@ def newton_modificado(v0, user_function):
     for i in range(max_iter):
         x_vals.append(xk[0])
         y_vals.append(xk[1])
-        max_values = np.max(xk, axis=0)
-        min_values = np.min(xk, axis=0)
+        modulo_do_vetor.append(math.sqrt(xk[0] + xk[1]))
+
+        max_values = np.max(modulo_do_vetor, axis=0)
+        min_values = np.min(modulo_do_vetor, axis=0)
         delta = max_values - min_values
 
         g = gradient(xk[0], xk[1])
@@ -69,12 +73,16 @@ def newton_modificado(v0, user_function):
 
         # Critério de Parada das Variáveis
         if i >= 5:
-            sigma = np.max(xk[i - 5:]) - np.min(xk[i - 5:])
+            sigma = np.max(modulo_do_vetor[i - 5:]) - np.min(modulo_do_vetor[i - 5:])
             if sigma < 0.001 * delta:
                 print("Critério de parada para as variáveis atingido")
                 break
 
         num_iters.append(i + 1)
+        function_values.append(user_function(xk))
+
+    # Plot Curva de Convergência
+    graphics_solution.curve_convergence(num_iters, function_values)
 
     return xk, user_function(xk), len(num_iters)
 
