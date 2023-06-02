@@ -2,6 +2,7 @@ import numpy as np
 from sympy import symbols, sympify, diff, lambdify
 import math
 import graphic as graphics_solution
+import matplotlib.pyplot as plt
 
 def calculate_function(vetor_da_variaveis):
     global funcao
@@ -104,3 +105,4 @@ variavel_inicial = np.array([x0, y0])
 x_opt, f_opt, num_iter = newton_modificado(variavel_inicial, calculate_function)
 
 print(f"Solução ótima encontrada: x = {x_opt}, f(x) = {f_opt}, número de interações = {num_iter}")
+plt.show()
