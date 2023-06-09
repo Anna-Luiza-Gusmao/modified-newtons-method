@@ -27,7 +27,7 @@ def function_graph(funcao):
 
         return f
 
-    plt.figure(num='Função em 3D', figsize=(24, 16), dpi=130)
+    plt.figure(num='Função Objetivo em 3D', figsize=(24, 16), dpi=130)
     ax = plt.subplot2grid((7, 7), (0, 0), rowspan=6, colspan=6, projection='3d')
     plt.style.use('Solarize_Light2')
 
