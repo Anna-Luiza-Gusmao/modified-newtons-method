@@ -83,7 +83,10 @@ def newton_modificado(v0, user_function):
         function_values.append(user_function(xk))
 
     # Plot Curva de Convergência
-    graphics_solution.curve_convergence(num_iters, function_values)
+    graphics_solution.convergence_curve(num_iters, function_values)
+
+    # Plot Gráfico 3D
+    graphics_solution.function_graph(funcao)
 
     return xk, user_function(xk), len(num_iters)
 
