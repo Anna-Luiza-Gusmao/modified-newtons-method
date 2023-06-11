@@ -88,6 +88,9 @@ def newton_modificado(v0, user_function):
     # Plot Gráfico 3D
     graphics_solution.function_graph(funcao)
 
+    # Plot Curvas de Nível 2D
+    graphics_solution.contour_lines(funcao)
+
     return xk, user_function(xk), len(num_iters)
 
 
