@@ -47,6 +47,12 @@ def function_graph(funcao):
     ax.set_title('Função em 3D', fontsize=8)
 
 
+def plot_path(x, y):
+    for i in range(1, len(x)):
+        plt.annotate('', xy=(x[i], y[i]), xytext=(x[i - 1], y[i - 1]),
+                     arrowprops=dict(facecolor='yellow', width=0.5, headwidth=1.5))
+
+
 def contour_lines(funcao):
     symbol = symbols('x y')
 
@@ -63,5 +69,46 @@ def contour_lines(funcao):
     plt.contour(X, Y, Z, levels=levels, cmap='viridis')
     plt.colorbar()
 
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+
+def contour_lines_with_steps(funcao, arrayX, arrayY, ponto_otimo):
+    symbol = symbols('x y')
+
+    plt.figure(num='Curvas de Nível com Deslocamento')
+
+    x = np.linspace(-6, 6, 100)
+    y = np.linspace(-6, 6, 100)
+    X, Y = np.meshgrid(x, y)
+
+    Z = function_aux(funcao, symbol, X, Y)
+
+    levels = np.linspace(-100, 100, 200)  # Intervalos personalizados para os níveis de contorno
+
+    plt.contour(X, Y, Z, levels=levels, cmap='viridis')
+    plot_path(arrayX, arrayY)
+
+    plt.scatter(ponto_otimo[0], ponto_otimo[1], c='red', marker='*', s=100)
+
+    # Cálculo dos limites adequados
+    lim_x_min = min(arrayX)
+    lim_x_max = max(arrayX)
+    lim_y_min = min(arrayY)
+    lim_y_max = max(arrayY)
+
+    margin = 1.0  # Margem adicional para os limites (opcional)
+    lim_x_min -= margin
+    lim_x_max += margin
+    lim_y_min -= margin
+    lim_y_max += margin
+
+    # Definição dos limites dos eixos x e y
+    plt.xlim(lim_x_min, lim_x_max)
+    plt.ylim(lim_y_min, lim_y_max)
+
+    plt.colorbar()
+
+    plt.title(f"Ponto Ótimo: {ponto_otimo}", fontsize=10)
     plt.xlabel('x')
     plt.ylabel('y')

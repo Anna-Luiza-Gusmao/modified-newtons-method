@@ -4,6 +4,7 @@ import math
 import graphic as graphics_solution
 import matplotlib.pyplot as plt
 
+
 def calculate_function(vetor_da_variaveis):
     global funcao
     # Cria uma expressão simbólica da função a partir da string fornecida pelo usuário
@@ -90,6 +91,9 @@ def newton_modificado(v0, user_function):
 
     # Plot Curvas de Nível 2D
     graphics_solution.contour_lines(funcao)
+
+    # Plot Curvas de Nível com Deslocamento
+    graphics_solution.contour_lines_with_steps(funcao, x_vals, y_vals, xk)
 
     return xk, user_function(xk), len(num_iters)
 
