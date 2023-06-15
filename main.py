@@ -52,7 +52,7 @@ def newton_modificado(v0, user_function):
     for i in range(max_iter):
         x_vals.append(xk[0])
         y_vals.append(xk[1])
-        modulo_do_vetor.append(math.sqrt(xk[0] + xk[1]))
+        modulo_do_vetor.append(math.sqrt(xk[0]**2 + xk[1]**2))
 
         max_values = np.max(modulo_do_vetor, axis=0)
         min_values = np.min(modulo_do_vetor, axis=0)
