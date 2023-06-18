@@ -112,3 +112,28 @@ def contour_lines_with_steps(funcao, arrayX, arrayY, ponto_otimo):
     plt.title(f"Ponto Ótimo: {ponto_otimo}", fontsize=10)
     plt.xlabel('x')
     plt.ylabel('y')
+
+
+def doable_region(funcao, restricoes, ponto_otimo):
+    symbol = symbols('x y')
+
+    plt.figure(num='Curvas de Nível com Restrições')
+
+    x = np.linspace(-6, 6, 100)
+    y = np.linspace(-6, 6, 100)
+    X, Y = np.meshgrid(x, y)
+
+    Z = function_aux(funcao, symbol, X, Y)
+
+    levels = np.linspace(-100, 100, 200)  # Intervalos personalizados para os níveis de contorno
+
+    plt.contour(X, Y, Z, levels=levels, cmap='viridis')
+    plt.scatter(ponto_otimo[0], ponto_otimo[1], c='red', marker='.', s=20)
+
+    for restricao in restricoes:
+        constraint_values = restricao(X, Y)
+        plt.contour(X, Y, constraint_values, [0], colors='r')
+
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.grid(True)

@@ -49,6 +49,13 @@ def newton_modificado(v0, user_function):
         hessian = np.array([[d2f_dx2_val, d2f_dxdy_val], [d2f_dxdy_val, d2f_dy2_val]], dtype=np.float64)
         return hessian
 
+    # Método da Barreira
+    def barrier_function(x_val, y_val, mi):
+        barrier_val = 0
+        for restricao in restricoes:
+            barrier_val -= math.log(-restricao(x_val, y_val))
+        return mi * barrier_val
+
     for i in range(max_iter):
         x_vals.append(xk[0])
         y_vals.append(xk[1])
@@ -66,8 +73,16 @@ def newton_modificado(v0, user_function):
         dk = -np.dot(hessiana_inversa, g)
 
         alpha = 1
-        while user_function(xk + alpha * dk) > user_function(xk) + 0.1 * alpha * np.dot(g, dk):
-            alpha *= 0.5
+
+        if len(restricoes) == 0:
+            while user_function(xk + alpha * dk) > user_function(xk) + 0.1 * alpha * np.dot(g, dk):
+                alpha *= 0.5
+        else:
+            while user_function(xk + alpha * dk) + barrier_function(xk[0] + alpha * dk[0], xk[1] + alpha * dk[1],
+                                                                    mi) > user_function(xk) + 0.1 * alpha * np.dot(g,
+                                                                                                                   dk):
+                alpha *= 0.5
+
         ft_alpha = alpha * dk
 
         x_new = xk + ft_alpha
@@ -95,6 +110,10 @@ def newton_modificado(v0, user_function):
     # Plot Curvas de Nível com Deslocamento
     graphics_solution.contour_lines_with_steps(funcao, x_vals, y_vals, xk)
 
+    if len(restricoes) != 0:
+        # Plot Região Factível
+        graphics_solution.doable_region(funcao, restricoes, xk)
+
     return xk, user_function(xk), len(num_iters)
 
 
@@ -107,6 +126,20 @@ funcao = input("Insira a função que deseja otimizar: ")
 # Solicita os valores das variáveis x e y
 x0 = float(input("Insira o x inicial: "))
 y0 = float(input("Insira o y inicial: "))
+
+# Solicita as restrições
+restricoes = []
+mi = 1
+
+while True:
+    input_do_usuario = input("Insira a restrição desejada (ou 'sair' para encerrar): ")
+    restricao = eval(f"lambda x, y: {input_do_usuario}")
+
+    if input_do_usuario.lower() == 'sair':
+        break
+
+    restricoes.append(restricao)
+
 
 # A variável inicial recebe os valores do usuário
 variavel_inicial = np.array([x0, y0])
