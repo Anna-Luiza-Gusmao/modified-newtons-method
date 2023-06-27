@@ -13,6 +13,17 @@ def calculate_function(vetor_da_variaveis):
     return new_function
 
 
+def apply_barrier(vector_of_variables, constraints, mi):
+    barrier = 0
+    for constraint in constraints:
+        constraint_value = constraint(*vector_of_variables)
+        if constraint_value >= 0:
+            barrier -= mi / constraint_value
+        else:
+            barrier -= float('inf')
+    return barrier
+
+
 def newton_modificado(v0, user_function):
     global funcao
     x, y = symbols('x y')
@@ -49,13 +60,6 @@ def newton_modificado(v0, user_function):
         hessian = np.array([[d2f_dx2_val, d2f_dxdy_val], [d2f_dxdy_val, d2f_dy2_val]], dtype=np.float64)
         return hessian
 
-    # Método da Barreira
-    def barrier_function(x_val, y_val, mi):
-        barrier_val = 0
-        for restricao in restricoes:
-            barrier_val -= math.log(-restricao(x_val, y_val))
-        return mi * barrier_val
-
     for i in range(max_iter):
         x_vals.append(xk[0])
         y_vals.append(xk[1])
@@ -78,9 +82,8 @@ def newton_modificado(v0, user_function):
             while user_function(xk + alpha * dk) > user_function(xk) + 0.1 * alpha * np.dot(g, dk):
                 alpha *= 0.5
         else:
-            while user_function(xk + alpha * dk) + barrier_function(xk[0] + alpha * dk[0], xk[1] + alpha * dk[1],
-                                                                    mi) > user_function(xk) + 0.1 * alpha * np.dot(g,
-                                                                                                                   dk):
+            while user_function(xk + alpha * dk) + apply_barrier(xk + alpha * dk, restricoes, mi) > user_function(
+                    xk) + 0.1 * alpha * np.dot(g, dk):
                 alpha *= 0.5
 
         ft_alpha = alpha * dk
