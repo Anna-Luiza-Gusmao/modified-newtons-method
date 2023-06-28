@@ -29,15 +29,12 @@ def function_graph(funcao):
     symbol = symbols('x y')
 
     plt.figure(num='Função Objetivo em 3D', figsize=(24, 16), dpi=130)
-    ax = plt.subplot2grid((7, 7), (0, 0), rowspan=6, colspan=6, projection='3d')
-    plt.style.use('Solarize_Light2')
+    ax = plt.axes(projection='3d')
 
     x = np.linspace(-6, 6, 100)
     y = np.linspace(-6, 6, 100)
     X, Y = np.meshgrid(x, y)
     Z = function_aux(funcao, symbol, X, Y)
-
-    ax.plot_wireframe(X, Y, Z, color='green')
 
     ax.set_xlabel('x', fontsize=10, color='gray')
     ax.set_ylabel('y', fontsize=10, color='gray')
