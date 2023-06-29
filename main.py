@@ -18,7 +18,7 @@ def apply_barrier(vector_of_variables, constraints, mi):
     for constraint in constraints:
         constraint_value = constraint(*vector_of_variables)
         if constraint_value >= 0:
-            barrier -= mi / constraint_value
+            barrier -= mi * 1 / constraint_value
         else:
             barrier -= float('inf')
     return barrier
@@ -105,7 +105,7 @@ def newton_modificado(v0, user_function):
     graphics_solution.convergence_curve(num_iters, function_values)
 
     # Plot Gráfico 3D
-    graphics_solution.function_graph(funcao)
+    graphics_solution.function_graph(funcao, restricoes)
 
     # Plot Curvas de Nível 2D
     graphics_solution.contour_lines(funcao)
@@ -116,6 +116,10 @@ def newton_modificado(v0, user_function):
     if len(restricoes) != 0:
         # Plot Região Factível
         graphics_solution.doable_region(funcao, restricoes, xk)
+
+        if len(restricoes) == 1:
+            # Plot Restrição em 3D
+            graphics_solution.function_graph_constraint(restricoes[0])
 
     return xk, user_function(xk), len(num_iters)
 

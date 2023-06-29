@@ -25,10 +25,10 @@ def function_aux(funcao, symbol, x, y):
     return f
 
 
-def function_graph(funcao):
+def function_graph(funcao, restricoes):
     symbol = symbols('x y')
 
-    plt.figure(num='Função Objetivo em 3D', figsize=(24, 16), dpi=130)
+    plt.figure(num='Função Objetivo em 3D', figsize=(8, 6), dpi=80)
     ax = plt.axes(projection='3d')
 
     x = np.linspace(-6, 6, 100)
@@ -41,6 +41,12 @@ def function_graph(funcao):
     ax.set_zlabel('z', fontsize=10, color='gray')
 
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='viridis', edgecolor='none')
+
+    if len(restricoes) != 0:
+        for restricao in restricoes:
+            constraint_values = restricao(X, Y)
+            ax.contour(X, Y, constraint_values, [0], colors='red')
+
     ax.set_title('Função em 3D', fontsize=8)
 
 
@@ -128,9 +134,26 @@ def doable_region(funcao, restricoes, ponto_otimo):
     plt.scatter(ponto_otimo[0], ponto_otimo[1], c='red', marker='.', s=20)
 
     for restricao in restricoes:
-        constraint_values = restricao(X, Y)
-        plt.contour(X, Y, constraint_values, [0], colors='r')
+        plt.contour(X, Y, restricao(X, Y), [0], colors='r')
 
     plt.xlabel('x')
     plt.ylabel('y')
     plt.grid(True)
+
+
+def function_graph_constraint(restricao):
+    plt.figure(num='Função da Restrição em 3D', figsize=(8, 6), dpi=80)
+    ax = plt.axes(projection='3d')
+
+    x = np.linspace(-6, 6, 100)
+    y = np.linspace(-6, 6, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = restricao(X, Y)
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='magma', edgecolor='none')
+
+    ax.set_title('Restrição em 3D', fontsize=8)
