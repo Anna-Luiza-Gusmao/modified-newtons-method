@@ -1,9 +1,11 @@
 import numpy as np
+from sympy import symbols, sympify, diff, lambdify
+import math
+import graphic as graphics_solution
 import matplotlib.pyplot as plt
-from sympy import symbols, sympify
 
 
-def user_function(vetor_da_variaveis):
+def calculate_function(vetor_da_variaveis):
     global funcao
     # Cria uma expressão simbólica da função a partir da string fornecida pelo usuário
     new_function = sympify(funcao)
@@ -11,42 +13,118 @@ def user_function(vetor_da_variaveis):
     return new_function
 
 
-def newton_modificado(v0, epsilon, user_function):
-    x = v0
-    n = len(x)
-    B = np.eye(n)  # initial approximation of inverse Hessian
-    grad = lambda x: np.array([4 * x[0] ** 3 - 4.2 * x[0] ** 2 + x[1], x[0] + 2 * x[1]])  # gradient of three-hump camel
+def apply_barrier(vector_of_variables, constraints, mi):
+    barrier = 0
+    for constraint in constraints:
+        constraint_value = constraint(*vector_of_variables)
+        if constraint_value >= 0:
+            barrier -= mi * 1 / constraint_value
+        else:
+            barrier -= float('inf')
+    return barrier
+
+
+def newton_modificado(v0, user_function):
+    global funcao
+    x, y = symbols('x y')
+    xk = v0
+
     max_iter = 1000
     num_iters = []
+    function_values = []
     x_vals = []
     y_vals = []
+    modulo_do_vetor = []
+
+    # Calcula o gradiente da função
+    def gradient(x_val, y_val):
+        grad_x = diff(funcao, x).subs(x, x_val).subs(y, y_val)
+        grad_y = diff(funcao, y).subs(x, x_val).subs(y, y_val)
+        return np.array([grad_x, grad_y], dtype=np.float64)
+
+    # Calcule as derivadas parciais de segunda ordem
+    d2f_dx2 = diff(diff(funcao, x), x)
+    d2f_dy2 = diff(diff(funcao, y), y)
+    d2f_dxdy = diff(diff(funcao, x), y)
+
+    # Converta as expressões simbólicas em funções numéricas
+    d2f_dx2_func = lambdify((x, y), d2f_dx2)
+    d2f_dy2_func = lambdify((x, y), d2f_dy2)
+    d2f_dxdy_func = lambdify((x, y), d2f_dxdy)
+
+    # Calcula os valores numéricos das derivadas parciais de segunda ordem e a matriz hessiana
+    def calculate_hessian(x_val, y_val):
+        d2f_dx2_val = d2f_dx2_func(x_val, y_val)
+        d2f_dy2_val = d2f_dy2_func(x_val, y_val)
+        d2f_dxdy_val = d2f_dxdy_func(x_val, y_val)
+        hessian = np.array([[d2f_dx2_val, d2f_dxdy_val], [d2f_dxdy_val, d2f_dy2_val]], dtype=np.float64)
+        return hessian
 
     for i in range(max_iter):
-        g = grad(x)
-        if np.linalg.norm(g) < epsilon:
-            break  # stopping criterion for the gradient
-        p = -np.dot(B, g)
-        alpha = 1
-        print(x + alpha * p)
-        while user_function(x + alpha * p) > user_function(x) + 0.1 * alpha * np.dot(g, p):
-            alpha *= 0.5
-        s = alpha * p
-        x_new = x + s
-        y = grad(x_new) - g
-        dot_product = np.dot(y, s)
-        if dot_product == 0:
-            rho = 0  # or any other appropriate value
-        else:
-            rho = 1 / dot_product
-        B = (np.eye(n) - rho * np.outer(s, y)).dot(B).dot(np.eye(n) - rho * np.outer(y, s)) + rho * np.outer(s, s)
-        x = x_new
-        if np.linalg.norm(s) < epsilon:
-            break  # stopping criterion for the variables
-        num_iters.append(i + 1)
-        x_vals.append(x[0])
-        y_vals.append(x[1])
+        x_vals.append(xk[0])
+        y_vals.append(xk[1])
+        modulo_do_vetor.append(math.sqrt(xk[0]**2 + xk[1]**2))
 
-    return x, user_function(x), i
+        max_values = np.max(modulo_do_vetor, axis=0)
+        min_values = np.min(modulo_do_vetor, axis=0)
+        delta = max_values - min_values
+
+        g = gradient(xk[0], xk[1])
+
+        # Cálculo da inversa da Hessiana
+        hessiana_inversa = np.linalg.inv(calculate_hessian(xk[0], xk[1]))
+
+        dk = -np.dot(hessiana_inversa, g)
+
+        alpha = 1
+
+        if len(restricoes) == 0:
+            while user_function(xk + alpha * dk) > user_function(xk) + 0.1 * alpha * np.dot(g, dk):
+                alpha *= 0.5
+        else:
+            while user_function(xk + alpha * dk) + apply_barrier(xk + alpha * dk, restricoes, mi) > user_function(
+                    xk) + 0.1 * alpha * np.dot(g, dk):
+                alpha *= 0.5
+
+        ft_alpha = alpha * dk
+
+        x_new = xk + ft_alpha
+        xk = x_new
+
+        # Critério de Parada das Variáveis
+        if i >= 5:
+            sigma = np.max(modulo_do_vetor[i - 5:]) - np.min(modulo_do_vetor[i - 5:])
+            if sigma < 0.001 * delta:
+                print("Critério de parada para as variáveis atingido")
+                break
+
+        num_iters.append(i + 1)
+        function_values.append(user_function(xk))
+
+    # Plot Curva de Convergência
+    graphics_solution.convergence_curve(num_iters, function_values)
+
+    # Plot Gráfico 3D
+    graphics_solution.function_graph(funcao)
+
+    # Plot Curvas de Nível 2D
+    graphics_solution.contour_lines(funcao)
+
+    # Plot Curvas de Nível com Deslocamento
+    graphics_solution.contour_lines_with_steps(funcao, x_vals, y_vals, xk)
+
+    if len(restricoes) != 0:
+        # Plot Junção da Função Objetivo e Restrição em 3D
+        graphics_solution.objetive_function_with_constraint(funcao, restricoes)
+
+        if len(restricoes) == 1:
+            # Plot Restrição em 3D
+            graphics_solution.function_graph_constraint(restricoes[0])
+
+            # Plot Região Factível
+            graphics_solution.doable_region(funcao, restricoes[0], xk)
+
+    return xk, user_function(xk), len(num_iters)
 
 
 # Define os símbolos das variáveis independentes
@@ -59,15 +137,25 @@ funcao = input("Insira a função que deseja otimizar: ")
 x0 = float(input("Insira o x inicial: "))
 y0 = float(input("Insira o y inicial: "))
 
+# Solicita as restrições
+restricoes = []
+mi = 1
+
+while True:
+    input_do_usuario = input("Insira a restrição desejada (ou 'sair' para encerrar): ")
+    restricao = eval(f"lambda x, y: {input_do_usuario}")
+
+    if input_do_usuario.lower() == 'sair':
+        break
+
+    restricoes.append(restricao)
+
+
 # A variável inicial recebe os valores do usuário
-v0 = np.array([x0, y0])
-
-epsilon = 1e-6
-
-# Substitui as variáveis digitadas na função
-user_function(v0)
+variavel_inicial = np.array([x0, y0])
 
 # Chama o método de Newton Modificado
-x_opt, f_opt, num_iter = newton_modificado(v0, epsilon, user_function)
+x_opt, f_opt, num_iter = newton_modificado(variavel_inicial, calculate_function)
 
 print(f"Solução ótima encontrada: x = {x_opt}, f(x) = {f_opt}, número de interações = {num_iter}")
+plt.show()
