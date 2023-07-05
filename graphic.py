@@ -25,7 +25,7 @@ def function_aux(funcao, symbol, x, y):
     return f
 
 
-def function_graph(funcao, restricoes):
+def function_graph(funcao):
     symbol = symbols('x y')
 
     plt.figure(num='Função Objetivo em 3D', figsize=(8, 6), dpi=80)
@@ -41,11 +41,6 @@ def function_graph(funcao, restricoes):
     ax.set_zlabel('z', fontsize=10, color='gray')
 
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='viridis', edgecolor='none')
-
-    if len(restricoes) != 0:
-        for restricao in restricoes:
-            constraint_values = restricao(X, Y)
-            ax.contour(X, Y, constraint_values, [0], colors='red')
 
     ax.set_title('Função em 3D', fontsize=8)
 
@@ -117,7 +112,7 @@ def contour_lines_with_steps(funcao, arrayX, arrayY, ponto_otimo):
     plt.ylabel('y')
 
 
-def doable_region(funcao, restricoes, ponto_otimo):
+def doable_region(funcao, restricao, ponto_otimo):
     symbol = symbols('x y')
 
     plt.figure(num='Curvas de Nível com Restrições')
@@ -133,8 +128,7 @@ def doable_region(funcao, restricoes, ponto_otimo):
     plt.contour(X, Y, Z, levels=levels, cmap='viridis')
     plt.scatter(ponto_otimo[0], ponto_otimo[1], c='red', marker='.', s=20)
 
-    for restricao in restricoes:
-        plt.contour(X, Y, restricao(X, Y), [0], colors='r')
+    plt.contour(X, Y, restricao(X, Y), [0], colors='r')
 
     plt.xlabel('x')
     plt.ylabel('y')
@@ -157,3 +151,26 @@ def function_graph_constraint(restricao):
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='magma', edgecolor='none')
 
     ax.set_title('Restrição em 3D', fontsize=8)
+
+
+def objetive_function_with_constraint(funcao, restricoes):
+    symbol = symbols('x y')
+
+    plt.figure(num='Função Objetivo + Função de Restrição em 3D', figsize=(8, 6), dpi=80)
+    ax = plt.axes(projection='3d')
+
+    x = np.linspace(-6, 6, 100)
+    y = np.linspace(-6, 6, 100)
+    X, Y = np.meshgrid(x, y)
+
+    ax.set_xlabel('x', fontsize=10, color='gray')
+    ax.set_ylabel('y', fontsize=10, color='gray')
+    ax.set_zlabel('z', fontsize=10, color='gray')
+
+    if len(restricoes) != 0:
+        for restricao in restricoes:
+            constraint_values = restricao(X, Y)
+            Z = constraint_values + function_aux(funcao, symbol, X, Y)
+            ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='plasma', edgecolor='none')
+
+    ax.set_title('Funções em 3D', fontsize=8)
