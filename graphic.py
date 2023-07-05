@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import operator
-from sympy import symbols, sympify
+from sympy import symbols, sympify, Expr, lambdify
 
 
 def convergence_curve(interacoes, funcao):
@@ -112,7 +112,7 @@ def contour_lines_with_steps(funcao, arrayX, arrayY, ponto_otimo):
     plt.ylabel('y')
 
 
-def doable_region(funcao, restricao, ponto_otimo):
+def doable_region(funcao, restricoes, ponto_otimo):
     symbol = symbols('x y')
 
     plt.figure(num='Curvas de Nível com Restrições')
@@ -128,7 +128,24 @@ def doable_region(funcao, restricao, ponto_otimo):
     plt.contour(X, Y, Z, levels=levels, cmap='viridis')
     plt.scatter(ponto_otimo[0], ponto_otimo[1], c='red', marker='.', s=20)
 
-    plt.contour(X, Y, restricao(X, Y), [0], colors='r')
+    if len(restricoes) != 0:
+        for restricao in restricoes:
+            if isinstance(restricao, Expr):
+                # Restrição já é uma expressão matemática
+                plt.contour(X, Y, restricao, [0], colors='r')
+            else:
+                # Converter a expressão lambda em uma expressão matemática
+                x_expr, y_expr = symbol
+                restricao_expr = sympify(restricao(x_expr, y_expr))
+
+                # Converter a expressão em uma função numérica
+                restricao_func = lambdify((x_expr, y_expr), restricao_expr)
+
+                # Avaliar a função nos valores de X e Y
+                Z_restricao = restricao_func(X, Y)
+
+                # Plotar a restrição
+                plt.contour(X, Y, Z_restricao, [0], colors='r')
 
     plt.xlabel('x')
     plt.ylabel('y')
@@ -136,41 +153,32 @@ def doable_region(funcao, restricao, ponto_otimo):
 
 
 def function_graph_constraint(restricao):
+    symbol = symbols('x y')
+
     plt.figure(num='Função da Restrição em 3D', figsize=(8, 6), dpi=80)
     ax = plt.axes(projection='3d')
 
     x = np.linspace(-6, 6, 100)
     y = np.linspace(-6, 6, 100)
     X, Y = np.meshgrid(x, y)
-    Z = restricao(X, Y)
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
-    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='magma', edgecolor='none')
+    if isinstance(restricao, Expr):
+        Z = restricao(X, Y)
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='magma', edgecolor='none')
+    else:
+        # Converter a expressão lambda em uma expressão matemática
+        x_expr, y_expr = symbol
+        restricao_expr = sympify(restricao(x_expr, y_expr))
+
+        # Converter a expressão em uma função numérica
+        restricao_func = lambdify((x_expr, y_expr), restricao_expr)
+
+        # Avaliar a função nos valores de X e Y
+        Z = restricao_func(X, Y)
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='magma', edgecolor='none')
 
     ax.set_title('Restrição em 3D', fontsize=8)
-
-
-def objetive_function_with_constraint(funcao, restricoes):
-    symbol = symbols('x y')
-
-    plt.figure(num='Função Objetivo + Função de Restrição em 3D', figsize=(8, 6), dpi=80)
-    ax = plt.axes(projection='3d')
-
-    x = np.linspace(-6, 6, 100)
-    y = np.linspace(-6, 6, 100)
-    X, Y = np.meshgrid(x, y)
-
-    ax.set_xlabel('x', fontsize=10, color='gray')
-    ax.set_ylabel('y', fontsize=10, color='gray')
-    ax.set_zlabel('z', fontsize=10, color='gray')
-
-    if len(restricoes) != 0:
-        for restricao in restricoes:
-            constraint_values = restricao(X, Y)
-            Z = constraint_values + function_aux(funcao, symbol, X, Y)
-            ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='plasma', edgecolor='none')
-
-    ax.set_title('Funções em 3D', fontsize=8)

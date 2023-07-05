@@ -114,15 +114,12 @@ def newton_modificado(v0, user_function):
     graphics_solution.contour_lines_with_steps(funcao, x_vals, y_vals, xk)
 
     if len(restricoes) != 0:
-        # Plot Junção da Função Objetivo e Restrição em 3D
-        graphics_solution.objetive_function_with_constraint(funcao, restricoes)
+        # Plot Região Factível
+        graphics_solution.doable_region(funcao, restricoes, xk)
 
         if len(restricoes) == 1:
             # Plot Restrição em 3D
             graphics_solution.function_graph_constraint(restricoes[0])
-
-            # Plot Região Factível
-            graphics_solution.doable_region(funcao, restricoes[0], xk)
 
     return xk, user_function(xk), len(num_iters)
 
